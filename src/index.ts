@@ -1,39 +1,20 @@
-import { MongoClient } from 'mongodb';
+import express from 'express';
+import { connectDB } from './db';
+import bookRouter from './router';
 
-const express = require('express');
-const body = require('body-parser');
 
-async function start() {
-  try {
+const app = express();
+const port = 5030;
+app.use(express.json()); // for parsing application/json
+app.use(bookRouter);
+// Define a root route
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 
-    const app = express();
-
-    const mongo = await MongoClient.connect('mongodb://localhost:27017/crm_api');
-
-    await mongo.connect();
-
-    app.db = mongo.db();
-
-    // body parser
-
-    app.use(body.json({
-      limit: '500kb'
-    }));
-
-    // Routes
-
-    app.use('/customers', require('./routes/customers'));
-
-    // Start server
-
-    app.listen(3000, () => {
-      console.log('Server is running on port 3000');
-    });
-
-  }
-  catch(error) {
-    console.log(error);
-  }
-}
-
-start();
+// Connect to the database and start the server
+connectDB().then(() => {
+  app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+});
